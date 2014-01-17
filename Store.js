@@ -80,26 +80,34 @@ define(["dcl/dcl", "dojo/_base/lang", "dojo/when", "./Invalidating"], function (
 			// tags:
 			//		protected
 			if (isStoreInvalidated(props)) {
-				if (this._observeHandler) {
-					this._observeHandler.remove();
-					this._observeHandler = null;
-				}
 				setStoreValidate(props);
-				var store = this.store;
-				if (store != null) {
-					var results = store.query(this.query, this.queryOptions);
-					if (results.observe) {
-						// user asked us to observe the store
-						this._observeHandler = results.observe(lang.hitch(this, "_updateItem"), true);
-					}
-					// if we have a mapping function between store item and some intermediary items use it
-					results = results.map(lang.hitch(this, function (item) {
-						return this.itemToRenderItem(item);
-					}));
-					when(results, lang.hitch(this, this.initItems), lang.hitch(this, "_queryError"));
-				} else {
-					this.initItems([]);
+				this._queryStore();
+			}
+		},
+
+		_queryStore: function () {
+			// summary:
+			//		Query the store and init items with the returned values when done.
+			// tags:
+			//		protected
+			if (this._observeHandler) {
+				this._observeHandler.remove();
+				this._observeHandler = null;
+			}
+			var store = this.store;
+			if (store != null) {
+				var results = store.query(this.query, this.queryOptions);
+				if (results.observe) {
+					// user asked us to observe the store
+					this._observeHandler = results.observe(lang.hitch(this, "_updateItem"), true);
 				}
+				// if we have a mapping function between store item and some intermediary items use it
+				results = results.map(lang.hitch(this, function (item) {
+					return this.itemToRenderItem(item);
+				}));
+				when(results, lang.hitch(this, this.initItems), lang.hitch(this, "_queryError"));
+			} else {
+				this.initItems([]);
 			}
 		},
 
